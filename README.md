@@ -63,32 +63,6 @@ python src/generator.py
 
 成功执行后，根目录会生成 `index.html`。
 
-## 🔄 自动化部署（推荐）
-
-### GitHub Actions Secrets
-
-`Settings → Secrets and variables → Actions`
-
-添加：
-
--   `CF_API_TOKEN`
--   `CF_EMAIL`
-
-工作流会根据 `deploy.yml` 自动生成导航站。
-
-## ☁️ 部署到 Cloudflare Pages
-
-构建设置：
-
--   **Build command：**
-
-    ``` bash
-    pip install -r requirements.txt && python src/generator.py
-    ```
-
--   **Build output directory：** `.`
-
--   设置环境变量：`CF_API_TOKEN`、`CF_EMAIL`
 
 ## 💡 自定义
 
