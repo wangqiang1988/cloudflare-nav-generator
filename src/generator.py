@@ -129,10 +129,12 @@ def generate_links_html(dns_data):
     """将处理后的 DNS 数据转换成 HTML 链接结构"""
     html_output = []
     
+    # 按 Zone Name 分组
     grouped_data = defaultdict(list)
     for link in dns_data:
         grouped_data[link['zone_name']].append(link)
 
+    # 生成 HTML
     for zone_name, links in grouped_data.items():
         html_output.append(f'<div class="zone-group">')
         html_output.append(f'<h2>🌐 {zone_name}</h2>')
@@ -141,14 +143,17 @@ def generate_links_html(dns_data):
         for link in links:
             full_url = f"https://{link['full_name']}"
             
+            # --- 1. 构造记录内容显示 HTML ---
             content_html = ""
             if SHOW_RECORD_CONTENT:
                 content_html = f"<p>指向: {link['content']} ({link['type']})</p>"
                 
+            # --- 2. 构造状态显示 HTML ---
             status_html = ""
             if SHOW_RECORD_STATUS:
                 status_code = link['status_code']
                 
+                # 根据状态码决定样式
                 if status_code >= 200 and status_code < 400:
                     status_class = 'status-ok'
                     status_text = f'在线: {status_code}'
@@ -162,15 +167,19 @@ def generate_links_html(dns_data):
                     status_class = 'status-error'
                     status_text = f'错误: {status_code}'
                 
+                # *** 重点修改：移除了 status-test-url 的输出 ***
+                # *** 或者，仅输出状态，并将检测 URL 放在 title 属性中 ***
                 status_html = f"""
-                <div class="status-area">
+                <div class="status-area" title="检测URL: {link['test_url']}"> 
                     <span class="status-display {status_class}">
                         {status_text}
                     </span>
-                    <span class="status-test-url" title="检测URL">({link['test_url']})</span>
-                </div>
+                    </div>
                 """
+                # 注意：在新模板中，status-test-url 类已被 CSS 设为 display: none;
+                # 为了兼容性和更彻底的隐藏，这里直接移除了它在 HTML 中的生成。
 
+            # 最终 HTML 结构
             item_html = f"""
             <li class="link-item">
                 <a href="{full_url}" target="_blank" title="{full_url}">{link['full_name']}</a>
@@ -184,7 +193,6 @@ def generate_links_html(dns_data):
         html_output.append('</div>')
         
     return "\n".join(html_output)
-
 # --- 辅助函数：处理单个 DNS 记录的状态检测 ---
 
 def process_record_status(record_data):

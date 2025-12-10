@@ -3,186 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloudflare 自动化导航站</title>
+    <title>Cloudflare 域名导航站</title>
     <style>
-        /* --- 全局样式 --- */
         :root {
-            --bg-color: #f8f9fa; 
-            --card-bg: #ffffff;  
-            --primary-color: #007bff; 
-            --text-color: #343a40; 
-            --secondary-text: #6c757d; 
-            --border-color: #e9ecef;
-            --shadow-light: 0 4px 10px rgba(0, 0, 0, 0.08);
-            --shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.15);
+            /* 深色主题变量 */
+            --bg-color: #1a1a2e;
+            --text-color: #e4e4e4;
+            --card-bg: #22223b;
+            --link-color: #908dff;
+            --link-hover: #ffffff;
+            --status-ok: #00b894;
+            --status-error: #d63031;
+            --status-net-error: #fdcb6e;
+            --status-skipped: #636e72;
+            --border-color: #3b3b54;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 30px;
+            padding: 20px;
+            line-height: 1.6;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
-        /* --- 标题与页脚 --- */
         header {
             text-align: center;
-            margin-bottom: 50px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 30px;
         }
-        
-        h1 {
-            color: var(--primary-color);
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .update-info {
-            text-align: center;
-            margin-top: 60px;
-            font-size: 0.9em;
-            color: var(--secondary-text);
+        header h1 {
+            color: var(--link-color);
+            font-weight: 300;
         }
 
-        /* --- 域名分组 (Zone Group) --- */
+        /* 区域分组样式 */
         .zone-group {
             margin-bottom: 40px;
-            padding: 25px;
             background-color: var(--card-bg);
+            padding: 20px;
             border-radius: 12px;
-            box-shadow: var(--shadow-light);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
-
         .zone-group h2 {
-            border-bottom: 3px solid var(--primary-color);
-            padding-bottom: 15px;
-            margin-top: 0;
-            margin-bottom: 25px;
-            color: var(--text-color);
             font-size: 1.8em;
-            font-weight: 600;
+            color: var(--link-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
         }
 
-        /* --- 链接列表 --- */
+        /* 链接列表样式 */
         .link-list {
             list-style: none;
             padding: 0;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
         }
 
         .link-item {
-            background-color: var(--bg-color);
-            border: 1px solid var(--border-color);
+            background-color: #2c2c45;
+            padding: 15px;
             border-radius: 8px;
-            padding: 20px;
-            transition: all 0.3s ease;
-            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        
         .link-item:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-hover);
-            border-color: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
         }
 
+        /* 主链接样式 */
         .link-item a {
-            text-decoration: none;
-            color: var(--primary-color);
-            font-weight: 700;
             font-size: 1.1em;
-            display: block;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
+            font-weight: bold;
+            color: var(--text-color);
+            text-decoration: none;
             margin-bottom: 5px;
+            word-break: break-all;
         }
-
         .link-item a:hover {
-            text-decoration: underline;
+            color: var(--link-color);
         }
 
+        /* 指向内容样式 */
         .link-item p {
             font-size: 0.9em;
-            color: var(--secondary-text);
-            margin: 0;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
+            color: #b0b0d6;
+            margin: 5px 0;
+            word-break: break-all;
         }
 
-        /* --- 状态显示样式 --- */
+        /* 状态区域样式 */
         .status-area {
-            margin-top: 10px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: space-between;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--border-color);
         }
 
+        /* 状态显示徽章样式 */
         .status-display {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
             font-weight: bold;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.9em;
-            text-transform: uppercase;
-        }
-        
-        /* 状态颜色 */
-        .status-ok {
-            background-color: #d4edda; 
-            color: #155724;             
-            border: 1px solid #c3e6cb;
+            color: #fff;
         }
 
-        .status-error {
-            background-color: #f8d7da; 
-            color: #721c24;             
-            border: 1px solid #f5c6cb;
+        .status-ok { background-color: var(--status-ok); }
+        .status-error { background-color: var(--status-error); }
+        .status-net-error { 
+            background-color: var(--status-net-error); 
+            color: #333;
         }
+        .status-skipped { background-color: var(--status-skipped); }
         
-        .status-net-error {
-            background-color: #fff3cd; 
-            color: #856404;             
-            border: 1px solid #ffeeba;
-        }
-        
+        /* 隐藏检测 URL 的样式 */
         .status-test-url {
-            font-size: 0.8em;
-            color: #adb5bd;
+            display: none; /* 隐藏检测 URL */
         }
 
-        /* --- 响应式调整 --- */
-        @media (max-width: 768px) {
-            body { padding: 15px; }
-            h1 { font-size: 2em; }
-            .zone-group h2 { font-size: 1.5em; }
-            .link-list { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>我的 Cloudflare DNS 导航面板</h1>
-            <p style="color: var(--secondary-text);">基于 Cloudflare API 自动生成的域名导航站</p>
+            <h1>Cloudflare 域名导航站生成结果</h1>
         </header>
 
-        {{ links }}
-        
-        <div class="update-info">
-            最后更新时间: <span id="update-time"></span>
-        </div>
+        <main>
+            {{ links }}
+        </main>
     </div>
-    
-    <script>
-        // 客户端脚本显示当前页面的生成时间
-        document.getElementById('update-time').textContent = new Date().toLocaleString();
-    </script>
 </body>
 </html>
