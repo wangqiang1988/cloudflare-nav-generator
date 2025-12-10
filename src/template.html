@@ -3,30 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloudflare DNS 导航站</title>
+    <title>Cloudflare 自动化导航站</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        h1 { color: #007bff; text-align: center; margin-bottom: 40px; }
-        .zone-group { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); margin-bottom: 30px; }
-        .zone-group h2 { border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin-top: 0; color: #555; }
-        .link-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 20px; }
-        .link-item { background-color: #eaf0f6; border-radius: 6px; padding: 15px 20px; flex: 1 1 calc(33.333% - 20px); min-width: 250px; transition: transform 0.2s; }
-        .link-item:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
-        .link-item a { text-decoration: none; color: #007bff; font-weight: bold; display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-        .link-item p { font-size: 0.9em; color: #6c757d; margin: 5px 0 0 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        /* --- 全局样式 --- */
+        :root {
+            --bg-color: #f8f9fa; /* 浅灰色背景 */
+            --card-bg: #ffffff;  /* 白色卡片背景 */
+            --primary-color: #007bff; /* 主题色：蓝色 */
+            --text-color: #343a40; /* 深色文本 */
+            --secondary-text: #6c757d; /* 次要文本 */
+            --border-color: #e9ecef;
+            --shadow-light: 0 4px 10px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* --- 标题与页脚 --- */
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .update-info {
+            text-align: center;
+            margin-top: 60px;
+            font-size: 0.9em;
+            color: var(--secondary-text);
+        }
+
+        /* --- 域名分组 (Zone Group) --- */
+        .zone-group {
+            margin-bottom: 40px;
+            padding: 25px;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow-light);
+        }
+
+        .zone-group h2 {
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: var(--text-color);
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        /* --- 链接列表 --- */
+        .link-list {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            /* 响应式网格：在宽屏上显示 4 列，最小宽度为 300px */
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px;
+        }
+
+        .link-item {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .link-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-color);
+        }
+
+        .link-item a {
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1.1em;
+            display: block;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            margin-bottom: 5px;
+        }
+
+        .link-item a:hover {
+            text-decoration: underline;
+        }
+
+        .link-item p {
+            font-size: 0.9em;
+            color: var(--secondary-text);
+            margin: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        /* --- 响应式调整 --- */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            .zone-group h2 {
+                font-size: 1.5em;
+            }
+            /* 在小屏幕上，网格可以退化为 1 或 2 列 */
+            .link-list {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>我的 Cloudflare DNS 导航站</h1>
+        <header>
+            <h1>我的 Cloudflare DNS 导航面板</h1>
+            <p style="color: var(--secondary-text);">基于 Cloudflare API 自动生成的域名导航站</p>
+        </header>
+
         {{ links }}
         
-        <p style="text-align: center; margin-top: 50px; font-size: 0.8em; color: #aaa;">
+        <div class="update-info">
             最后更新时间: <span id="update-time"></span>
-        </p>
+        </div>
     </div>
+    
     <script>
+        // 客户端脚本显示当前页面的生成时间
         document.getElementById('update-time').textContent = new Date().toLocaleString();
     </script>
 </body>
