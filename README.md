@@ -73,10 +73,11 @@ ALLOWED_TYPES = {"A", "CNAME", "AAAA"}
 EXCLUDE_PREFIXES = ["_acme-challenge", "mail", "ftp", "localhost"]
 ```
 
+
 ### 页面样式（template.html）
 
 可自由修改 HTML 与 CSS。
-
+env文件可根据参数定义是否显示域名、状态
 ## 📄 许可证
 
 本项目采用 **MIT License**。
