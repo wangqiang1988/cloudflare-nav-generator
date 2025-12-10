@@ -134,6 +134,51 @@
                 grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             }
         }
+        /* --- 状态检测样式 --- */
+        .status-area {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .check-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s;
+        }
+
+        .check-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .status-display {
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        /* 状态颜色 */
+        .status-ok {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-warn {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
@@ -153,6 +198,49 @@
     <script>
         // 客户端脚本显示当前页面的生成时间
         document.getElementById('update-time').textContent = new Date().toLocaleString();
+        function updateStatus(elementId, statusText, statusClass) {
+    const statusElement = document.getElementById(`status_${elementId}`);
+    if (statusElement) {
+        statusElement.textContent = statusText;
+        statusElement.className = `status-display ${statusClass}`;
+    }
+}
+
+async function checkStatus(targetUrl, elementId) {
+    const statusElement = document.getElementById(`status_${elementId}`);
+    const button = statusElement.previousElementSibling;
+
+    updateStatus(elementId, '检测中...', 'status-warn');
+    button.disabled = true;
+
+    // *** 关键：使用 CORS 代理绕过浏览器的跨域限制 ***
+    // 代理 URL: https://corsproxy.io/?<Encoded Target URL>
+    const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
+
+    try {
+        // 使用 HEAD 请求通常更快，只获取 HTTP 头信息
+        const response = await fetch(proxyUrl, { method: 'HEAD', mode: 'cors', redirect: 'follow' });
+        
+        let statusCode = response.status;
+
+        // 代理可能会返回 200，但实际目标状态码在响应头中
+        if (response.headers.has('X-Cors-Status')) {
+            statusCode = parseInt(response.headers.get('X-Cors-Status'));
+        }
+
+        const statusClass = (statusCode >= 200 && statusCode < 400) ? 'status-ok' : 'status-error';
+        const statusText = `状态码: ${statusCode}`;
+        
+        updateStatus(elementId, statusText, statusClass);
+
+    } catch (error) {
+        // 如果网络错误或 CORS 代理也失败
+        updateStatus(elementId, '无法连接', 'status-error');
+        console.error(`检测 ${targetUrl} 失败:`, error);
+    } finally {
+        button.disabled = false;
+    }
+}
     </script>
 </body>
 </html>

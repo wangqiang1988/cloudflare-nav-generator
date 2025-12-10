@@ -103,14 +103,23 @@ def generate_links_html(dns_data):
         # 链接列表
         html_output.append(f'<ul class="link-list">')
         for link in links:
-            # 完整的 URL，使用 HTTPS 协议
+            # 使用 full_name 作为 ID 的一部分，确保唯一性
+            element_id = link['full_name'].replace('.', '_').replace('-', '_')
             full_url = f"https://{link['full_name']}"
             
-            # 链接项的 HTML 结构
+            # 【新结构：添加按钮和状态显示】
             item_html = f"""
             <li class="link-item">
                 <a href="{full_url}" target="_blank" title="{full_url}">{link['full_name']}</a>
                 <p>指向: {link['content']} ({link['type']})</p>
+                <div class="status-area">
+                    <button class="check-btn" onclick="checkStatus('{full_url}', '{element_id}')">
+                        检查状态
+                    </button>
+                    <span id="status_{element_id}" class="status-display">
+                        待检测
+                    </span>
+                </div>
             </li>
             """
             html_output.append(item_html)
