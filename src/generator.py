@@ -141,7 +141,7 @@ def main():
     print("--- 2. 遍历 Zone 获取 DNS 记录 ---")
     for zone in zones:
         zone_id = zone['id']
-        zone_name = zone['name']
+        zone_name = zone['name'] # <--- 确保 zone_name 变量在这里被定义
         
         print(f"  > 正在处理 Zone: {zone_name}")
         records = get_dns_records(zone_id)
@@ -149,11 +149,14 @@ def main():
             continue
             
         for record in records:
+            # 【关键修复】手动将 zone_name 添加到 record 字典中，以供后续函数使用
+            record['zone_name'] = zone_name 
+            
             # 检查记录是否符合导航站标准
-            if is_valid_link_record(record):
+            if is_valid_link_record(record): # <--- 现在这里不会报错了
                 # 构造最终数据结构
                 link_data = {
-                    'zone_name': zone_name,
+                    'zone_name': zone_name, # 注意：这里的 zone_name 是从外部变量获取的
                     'full_name': record['name'], 
                     'type': record['type'],
                     'content': record['content']
